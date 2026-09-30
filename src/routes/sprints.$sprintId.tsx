@@ -32,7 +32,7 @@ import { RiskTrendChart } from "@/components/risk-trend-chart";
 import { SnapshotModal } from "@/components/snapshot-modal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { deriveMitigations, riskSeries } from "@/lib/risk-engine";
+import { riskSeries } from "@/lib/risk-engine";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +59,7 @@ const CHART_AXIS = { fill: "var(--color-muted-foreground)", fontSize: 11 };
 
 function SprintDetail() {
   const { sprintId } = useParams({ from: "/sprints/$sprintId" });
-  const { sprints, riskFor, thresholds, mitigations, setMitigationStatus } = useStore();
+  const { sprints, riskFor, thresholds, mitigationsFor, setMitigationStatus } = useStore();
   const [snapshotDay, setSnapshotDay] = useState<number | null>(null);
 
   const sprint = sprints.find((s) => s.id === sprintId);
@@ -83,11 +83,7 @@ function SprintDetail() {
 
   const risk = riskFor(sprint);
   const snap = risk.snapshot;
-  const actions = (
-    mitigations.length && mitigations[0].sprintId === sprint.id
-      ? mitigations
-      : deriveMitigations(sprint, risk)
-  ).filter((m) => m.sprintId === sprint.id);
+  const actions = mitigationsFor(sprint);
 
   return (
     <AppShell>
