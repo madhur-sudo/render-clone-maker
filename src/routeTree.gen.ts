@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as SprintsIndexRouteImport } from './routes/sprints.index'
+import { Route as SprintsSprintIdRouteImport } from './routes/sprints.$sprintId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,34 +29,43 @@ const SprintsIndexRoute = SprintsIndexRouteImport.update({
   path: '/sprints/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SprintsSprintIdRoute = SprintsSprintIdRouteImport.update({
+  id: '/sprints/$sprintId',
+  path: '/sprints/$sprintId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
   '/sprints/': typeof SprintsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
   '/sprints': typeof SprintsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
   '/sprints/': typeof SprintsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/sprints/'
+  fullPaths: '/' | '/dashboard' | '/sprints/$sprintId' | '/sprints/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/sprints'
-  id: '__root__' | '/' | '/dashboard' | '/sprints/'
+  to: '/' | '/dashboard' | '/sprints/$sprintId' | '/sprints'
+  id: '__root__' | '/' | '/dashboard' | '/sprints/$sprintId' | '/sprints/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  SprintsSprintIdRoute: typeof SprintsSprintIdRoute
   SprintsIndexRoute: typeof SprintsIndexRoute
 }
 
@@ -82,12 +92,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SprintsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sprints/$sprintId': {
+      id: '/sprints/$sprintId'
+      path: '/sprints/$sprintId'
+      fullPath: '/sprints/$sprintId'
+      preLoaderRoute: typeof SprintsSprintIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  SprintsSprintIdRoute: SprintsSprintIdRoute,
   SprintsIndexRoute: SprintsIndexRoute,
 }
 export const routeTree = rootRouteImport
