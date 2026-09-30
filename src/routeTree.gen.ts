@@ -10,18 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MitigationRouteImport } from './routes/mitigation'
 import { Route as PredictionsRouteImport } from './routes/predictions'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TeamRouteImport } from './routes/team'
 import { Route as SprintsIndexRouteImport } from './routes/sprints.index'
 import { Route as SprintsSprintIdRouteImport } from './routes/sprints.$sprintId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
@@ -54,6 +61,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SprintsIndexRoute = SprintsIndexRouteImport.update({
   id: '/sprints/',
   path: '/sprints/',
@@ -67,35 +79,41 @@ const SprintsSprintIdRoute = SprintsSprintIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/analytics': typeof AnalyticsRoute
   '/dashboard': typeof DashboardRoute
   '/mitigation': typeof MitigationRoute
   '/predictions': typeof PredictionsRoute
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
+  '/team': typeof TeamRoute
   '/sprints/$sprintId': typeof SprintsSprintIdRoute
   '/sprints/': typeof SprintsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/analytics': typeof AnalyticsRoute
   '/dashboard': typeof DashboardRoute
   '/mitigation': typeof MitigationRoute
   '/predictions': typeof PredictionsRoute
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
+  '/team': typeof TeamRoute
   '/sprints/$sprintId': typeof SprintsSprintIdRoute
   '/sprints': typeof SprintsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/analytics': typeof AnalyticsRoute
   '/dashboard': typeof DashboardRoute
   '/mitigation': typeof MitigationRoute
   '/predictions': typeof PredictionsRoute
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
+  '/team': typeof TeamRoute
   '/sprints/$sprintId': typeof SprintsSprintIdRoute
   '/sprints/': typeof SprintsIndexRoute
 }
@@ -103,46 +121,54 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/analytics'
     | '/dashboard'
     | '/mitigation'
     | '/predictions'
     | '/projects'
     | '/settings'
+    | '/team'
     | '/sprints/$sprintId'
     | '/sprints/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/analytics'
     | '/dashboard'
     | '/mitigation'
     | '/predictions'
     | '/projects'
     | '/settings'
+    | '/team'
     | '/sprints/$sprintId'
     | '/sprints'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/analytics'
     | '/dashboard'
     | '/mitigation'
     | '/predictions'
     | '/projects'
     | '/settings'
+    | '/team'
     | '/sprints/$sprintId'
     | '/sprints/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AnalyticsRoute: typeof AnalyticsRoute
   DashboardRoute: typeof DashboardRoute
   MitigationRoute: typeof MitigationRoute
   PredictionsRoute: typeof PredictionsRoute
   ProjectsRoute: typeof ProjectsRoute
   SettingsRoute: typeof SettingsRoute
+  TeamRoute: typeof TeamRoute
   SprintsSprintIdRoute: typeof SprintsSprintIdRoute
   SprintsIndexRoute: typeof SprintsIndexRoute
 }
@@ -154,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analytics': {
@@ -198,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sprints/': {
       id: '/sprints/'
       path: '/sprints'
@@ -217,12 +257,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AnalyticsRoute: AnalyticsRoute,
   DashboardRoute: DashboardRoute,
   MitigationRoute: MitigationRoute,
   PredictionsRoute: PredictionsRoute,
   ProjectsRoute: ProjectsRoute,
   SettingsRoute: SettingsRoute,
+  TeamRoute: TeamRoute,
   SprintsSprintIdRoute: SprintsSprintIdRoute,
   SprintsIndexRoute: SprintsIndexRoute,
 }

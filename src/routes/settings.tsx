@@ -136,12 +136,12 @@ function SettingsPage() {
 
       <Panel title="Notifications" description="Which changes raise a notification in the workspace.">
         <div className="space-y-3">
-          {[
+          {([
             ["riskChange", "Risk level changes for the active sprint"],
             ["scope", "Scope-change activity increases"],
             ["blockers", "Issues become blocked"],
             ["digest", "Daily sprint digest"],
-          ].map(([key, label]) => (
+          ] as Array<[string, string]>).map(([key, label]) => (
             <label key={key} className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-2.5 text-sm">
               {label}
               <Switch
