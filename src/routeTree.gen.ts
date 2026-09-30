@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as MitigationRouteImport } from './routes/mitigation'
+import { Route as PredictionsRouteImport } from './routes/predictions'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SprintsIndexRouteImport } from './routes/sprints.index'
+import { Route as SprintsSprintIdRouteImport } from './routes/sprints.$sprintId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MitigationRoute = MitigationRouteImport.update({
+  id: '/mitigation',
+  path: '/mitigation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PredictionsRoute = PredictionsRouteImport.update({
+  id: '/predictions',
+  path: '/predictions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SprintsIndexRoute = SprintsIndexRouteImport.update({
+  id: '/sprints/',
+  path: '/sprints/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SprintsSprintIdRoute = SprintsSprintIdRouteImport.update({
+  id: '/sprints/$sprintId',
+  path: '/sprints/$sprintId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/dashboard': typeof DashboardRoute
+  '/mitigation': typeof MitigationRoute
+  '/predictions': typeof PredictionsRoute
+  '/projects': typeof ProjectsRoute
+  '/settings': typeof SettingsRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
+  '/sprints/': typeof SprintsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/dashboard': typeof DashboardRoute
+  '/mitigation': typeof MitigationRoute
+  '/predictions': typeof PredictionsRoute
+  '/projects': typeof ProjectsRoute
+  '/settings': typeof SettingsRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
+  '/sprints': typeof SprintsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/dashboard': typeof DashboardRoute
+  '/mitigation': typeof MitigationRoute
+  '/predictions': typeof PredictionsRoute
+  '/projects': typeof ProjectsRoute
+  '/settings': typeof SettingsRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
+  '/sprints/': typeof SprintsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/analytics'
+    | '/dashboard'
+    | '/mitigation'
+    | '/predictions'
+    | '/projects'
+    | '/settings'
+    | '/sprints/$sprintId'
+    | '/sprints/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/analytics'
+    | '/dashboard'
+    | '/mitigation'
+    | '/predictions'
+    | '/projects'
+    | '/settings'
+    | '/sprints/$sprintId'
+    | '/sprints'
+  id:
+    | '__root__'
+    | '/'
+    | '/analytics'
+    | '/dashboard'
+    | '/mitigation'
+    | '/predictions'
+    | '/projects'
+    | '/settings'
+    | '/sprints/$sprintId'
+    | '/sprints/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  DashboardRoute: typeof DashboardRoute
+  MitigationRoute: typeof MitigationRoute
+  PredictionsRoute: typeof PredictionsRoute
+  ProjectsRoute: typeof ProjectsRoute
+  SettingsRoute: typeof SettingsRoute
+  SprintsSprintIdRoute: typeof SprintsSprintIdRoute
+  SprintsIndexRoute: typeof SprintsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mitigation': {
+      id: '/mitigation'
+      path: '/mitigation'
+      fullPath: '/mitigation'
+      preLoaderRoute: typeof MitigationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/predictions': {
+      id: '/predictions'
+      path: '/predictions'
+      fullPath: '/predictions'
+      preLoaderRoute: typeof PredictionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sprints/': {
+      id: '/sprints/'
+      path: '/sprints'
+      fullPath: '/sprints/'
+      preLoaderRoute: typeof SprintsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sprints/$sprintId': {
+      id: '/sprints/$sprintId'
+      path: '/sprints/$sprintId'
+      fullPath: '/sprints/$sprintId'
+      preLoaderRoute: typeof SprintsSprintIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  DashboardRoute: DashboardRoute,
+  MitigationRoute: MitigationRoute,
+  PredictionsRoute: PredictionsRoute,
+  ProjectsRoute: ProjectsRoute,
+  SettingsRoute: SettingsRoute,
+  SprintsSprintIdRoute: SprintsSprintIdRoute,
+  SprintsIndexRoute: SprintsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
