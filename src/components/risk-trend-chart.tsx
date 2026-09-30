@@ -74,9 +74,12 @@ export function RiskTrendChart({
         <AreaChart
           data={data}
           margin={{ top: 8, right: 8, bottom: 0, left: -18 }}
-          onClick={(state: { activeTooltipIndex?: number }) => {
-            const idx = state?.activeTooltipIndex;
-            if (onSelectDay && typeof idx === "number" && data[idx]) onSelectDay(data[idx].day);
+          onClick={(state: { activeTooltipIndex?: number | string | null; activeLabel?: number | string }) => {
+            if (!onSelectDay) return;
+            const idx = Number(state?.activeTooltipIndex);
+            if (Number.isFinite(idx) && data[idx]) return onSelectDay(data[idx].day);
+            const label = Number(state?.activeLabel);
+            if (Number.isFinite(label)) onSelectDay(label);
           }}
         >
           <defs>
