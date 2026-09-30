@@ -56,6 +56,7 @@ interface StoreValue {
   updateProject: (id: string, p: Omit<Project, "id">) => void;
   deleteProject: (id: string) => void;
   riskFor: (sprint: Sprint, day?: number) => RiskResult;
+  mitigationsFor: (sprint: Sprint) => MitigationAction[];
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -250,6 +251,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         return next;
       }),
     riskFor,
+    mitigationsFor: (sprint) =>
+      deriveMitigations(sprint, computeRisk(sprint, thresholds)).map((m) => ({
+        ...m,
+        status: mitigationStatus[m.id] ?? m.status,
+      })),
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
