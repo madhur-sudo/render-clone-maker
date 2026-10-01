@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
@@ -42,14 +43,18 @@ function PredictionsPage() {
   const activeDay = Math.min(day ?? maxDay, maxDay);
   const risk = sprint ? computeRisk(sprint, thresholds, activeDay) : undefined;
 
+  // Days NOT yet available — post-snapshot window
+  const daysReserved = sprint ? sprint.lengthDays - activeDay : 0;
+
   return (
     <AppShell>
       <PageHeader
         eyebrow="Baseline Risk Engine — Demo Implementation"
         title="Early Sprint Risk Prediction"
-        subtitle="Risk is computed using only information recorded up to the selected snapshot day. The final sprint outcome is never used as an input."
+        subtitle="Risk is computed using only information recorded up to the selected snapshot day. The final sprint outcome is never used as a prediction input."
       />
 
+      {/* Prediction inputs */}
       <Panel title="Prediction inputs">
         <div className="grid gap-4 md:grid-cols-3">
           <div>
@@ -110,6 +115,32 @@ function PredictionsPage() {
         </div>
       </Panel>
 
+      {/* Snapshot window — temporal integrity panel */}
+      {sprint && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <InfoBox label="Prediction snapshot" value={`Day ${activeDay} of ${sprint.lengthDays}`} />
+          <InfoBox
+            label="Data used"
+            value={`Days 1–${activeDay}`}
+            sub="Only metrics available up to this day are used as inputs."
+          />
+          <InfoBox
+            label="Outcome window"
+            value={
+              daysReserved > 0
+                ? `Days ${activeDay + 1}–${sprint.lengthDays} (${daysReserved} days reserved)`
+                : "Sprint complete — full data available"
+            }
+            sub={
+              daysReserved > 0
+                ? "Post-snapshot data is withheld to prevent outcome leakage."
+                : undefined
+            }
+            reserved={daysReserved > 0}
+          />
+        </div>
+      )}
+
       {!sprint || !risk ? (
         <Panel title="No risk prediction available">
           <p className="text-sm text-muted-foreground">
@@ -121,12 +152,17 @@ function PredictionsPage() {
           <div className="grid gap-4 lg:grid-cols-3">
             <Panel title="Prediction">
               <div className="flex flex-col items-center gap-4">
-                <RiskGauge score={risk.score} level={risk.level} size={180} />
+                <RiskGauge score={risk.score} level={risk.level} size={180} label="Risk score" />
                 <RiskBadge level={risk.level} score={risk.score} size="md" />
                 <dl className="w-full space-y-1.5 text-sm">
                   <Row label="Risk score" value={`${risk.score} / 100`} />
-                  <Row label="Delay probability" value={`${risk.delayProbability}%`} />
+                  <Row
+                    label="Delay probability"
+                    value={`${risk.delayProbability}%`}
+                    note="Equals risk score — calibration pending"
+                  />
                   <Row label="Snapshot" value={`Day ${activeDay} of ${sprint.lengthDays}`} />
+                  <Row label="Days remaining" value={`${risk.daysRemaining}`} />
                 </dl>
               </div>
             </Panel>
@@ -136,7 +172,10 @@ function PredictionsPage() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Panel title="Metric summary" description={`Inputs used for the day ${activeDay} prediction.`}>
+            <Panel
+              title="Metric summary"
+              description={`All inputs used for the Day ${activeDay} prediction. Post-snapshot data is withheld.`}
+            >
               <dl className="divide-y divide-border rounded-lg border border-border">
                 {[
                   ["Completed story points", risk.snapshot.completedPoints],
@@ -160,7 +199,7 @@ function PredictionsPage() {
                 ))}
               </dl>
             </Panel>
-            <Panel title="Risk Explanation">
+            <Panel title="Risk explanation">
               <RiskExplanation risk={risk} />
             </Panel>
           </div>
@@ -170,10 +209,47 @@ function PredictionsPage() {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+/** Temporal integrity info box. */
+function InfoBox({
+  label,
+  value,
+  sub,
+  reserved,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  reserved?: boolean;
+}) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <dt className="text-muted-foreground">{label}</dt>
+    <div
+      className={`surface rounded-xl p-4 ${reserved ? "border-analytic/25 bg-analytic/5" : ""}`}
+    >
+      <div className="flex items-center gap-1.5">
+        {reserved && <Lock className="size-3.5 text-analytic" aria-hidden />}
+        <div className={`eyebrow ${reserved ? "text-analytic" : ""}`}>{label}</div>
+      </div>
+      <div className="mt-1.5 font-display text-sm font-semibold">{value}</div>
+      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note?: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <dt className="text-muted-foreground">
+        {label}
+        {note && <span className="block text-[10px] text-muted-foreground/70">{note}</span>}
+      </dt>
       <dd className="font-medium tabular-nums">{value}</dd>
     </div>
   );

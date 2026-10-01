@@ -22,7 +22,10 @@ export function SnapshotModal({
 
   const rows: Array<[string, string]> = [
     ["Completed / planned", `${s.completedPoints} / ${s.plannedPoints} story points`],
-    ["Progress", `${Math.round(risk.progressRatio * 100)}% (expected ${Math.round(risk.expectedProgressRatio * 100)}%)`],
+    [
+      "Progress",
+      `${Math.round(risk.progressRatio * 100)}% (expected ${Math.round(risk.expectedProgressRatio * 100)}%)`,
+    ],
     ["Issues in sprint", String(s.issuesTotal)],
     ["Issues added", String(s.issuesAdded)],
     ["Issues removed", String(s.issuesRemoved)],
@@ -43,7 +46,8 @@ export function SnapshotModal({
             <RiskBadge level={risk.level} score={risk.score} />
           </DialogTitle>
           <DialogDescription>
-            Risk computed using only the metrics available up to this day of the sprint.
+            Risk computed using only the metrics available up to Day {s.day} of {sprint.lengthDays}.
+            Post-snapshot data is withheld.
           </DialogDescription>
         </DialogHeader>
 
@@ -63,12 +67,13 @@ export function SnapshotModal({
               <li key={f.key} className="text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <span>{f.label}</span>
-                  <span className="tabular-nums text-muted-foreground">+{f.contribution}</span>
+                  <span className="tabular-nums text-muted-foreground">+{f.contribution} pts</span>
                 </div>
+                {/* Bar width = normalised signal strength (0..1), not contribution/max which is misleading */}
                 <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
                   <div
                     className="h-full rounded-full bg-primary"
-                    style={{ width: `${(f.contribution / f.maxContribution) * 100}%` }}
+                    style={{ width: `${Math.round(f.value * 100)}%` }}
                   />
                 </div>
               </li>

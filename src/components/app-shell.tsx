@@ -92,18 +92,24 @@ function SidebarFooter() {
   const navigate = useNavigate();
   return (
     <div className="border-t border-sidebar-border p-3">
+      {/* Demo workspace label */}
+      <div className="mb-2 rounded-md border border-primary/20 bg-primary/8 px-2.5 py-1.5 text-center">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+          Demo Workspace
+        </span>
+      </div>
       <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
         <Avatar className="size-8">
           <AvatarFallback className="bg-primary/15 text-xs text-primary">MT</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-medium">Madhur Thepale</div>
-          <div className="truncate text-xs text-muted-foreground">Demo Workspace</div>
+          <div className="truncate text-xs text-muted-foreground">Team 5 — Agile SD</div>
         </div>
         <Button
           size="icon"
           variant="ghost"
-          aria-label="Log out"
+          aria-label="Return to landing page"
           onClick={() => navigate({ to: "/" })}
         >
           <LogOut className="size-4" />
@@ -147,6 +153,7 @@ function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
       </Sheet>
 
       <div className="flex min-w-0 items-center gap-2">
+        {/* Project selector */}
         <Select value={selectedProject?.id} onValueChange={selectProject}>
           <SelectTrigger className="h-9 w-[9.5rem] border-border bg-card text-xs sm:w-44 sm:text-sm">
             <SelectValue placeholder="Project" />
@@ -160,6 +167,7 @@ function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
           </SelectContent>
         </Select>
 
+        {/* Sprint selector — updates dashboard when changed */}
         <Select value={selectedSprint?.id} onValueChange={selectSprint}>
           <SelectTrigger className="hidden h-9 w-36 border-border bg-card text-xs sm:flex sm:text-sm">
             <SelectValue placeholder="Sprint" />
@@ -180,6 +188,7 @@ function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
           variant="ghost"
           onClick={onOpenSearch}
           className="hidden h-9 gap-2 text-muted-foreground sm:flex"
+          aria-label="Open search (Ctrl+K)"
         >
           <Search className="size-4" />
           <span className="text-xs">Search</span>
@@ -195,7 +204,7 @@ function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" aria-label="Account">
+            <Button size="icon" variant="ghost" aria-label="Account menu">
               <Avatar className="size-7">
                 <AvatarFallback className="bg-primary/15 text-[10px] text-primary">MT</AvatarFallback>
               </Avatar>
@@ -204,7 +213,7 @@ function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuLabel>
               <div className="text-sm">Madhur Thepale</div>
-              <div className="text-xs font-normal text-muted-foreground">Demo Workspace</div>
+              <div className="text-xs font-normal text-muted-foreground">Demo Workspace · Team 5</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
@@ -220,7 +229,7 @@ function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/">
-                <LogOut className="size-4" /> Log out
+                <LogOut className="size-4" /> Return to landing
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -235,7 +244,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r border-sidebar-border bg-sidebar lg:block">
+      <aside
+        className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r border-sidebar-border bg-sidebar lg:block"
+        aria-label="Main navigation"
+      >
         <SidebarBody />
       </aside>
       <div className="lg:pl-60">

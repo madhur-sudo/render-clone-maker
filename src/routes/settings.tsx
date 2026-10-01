@@ -20,7 +20,7 @@ export const Route = createFileRoute("/settings")({
       {
         name: "description",
         content:
-          "Configure the workspace, risk thresholds that drive every risk label, notification triggers and appearance.",
+          "Configure the workspace, risk thresholds that drive every risk label and notification triggers.",
       },
       { property: "og:title", content: "Settings — SprintShield" },
       {
@@ -35,8 +35,9 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { thresholds, setThresholds, risk, selectedSprint } = useStore();
   const [workspace, setWorkspace] = useState("Demo Workspace");
-  const [alerts, setAlerts] = useState({ riskChange: true, scope: true, blockers: true, digest: false });
-  const [density, setDensity] = useState(true);
+  // Notification toggles control which events the store surfaces as notifications.
+  // Stored in session only — no server persistence in this demo.
+  const [alerts, setAlerts] = useState({ riskChange: true, scope: true, blockers: true });
 
   const update = (key: "medium" | "high" | "critical", value: number) => {
     const next = { ...thresholds, [key]: value };
@@ -53,25 +54,41 @@ function SettingsPage() {
         subtitle="Risk thresholds set here are applied to every score, badge and chart in the application."
       />
 
+      {/* Workspace */}
       <Panel title="Workspace">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="ws">Workspace name</Label>
-            <Input id="ws" value={workspace} onChange={(e) => setWorkspace(e.target.value)} className="mt-1.5" />
+            <Input
+              id="ws"
+              value={workspace}
+              onChange={(e) => setWorkspace(e.target.value)}
+              className="mt-1.5"
+            />
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Display label only. This is a demo workspace — changes are not persisted server-side.
+            </p>
           </div>
           <div>
             <Label htmlFor="engine">Prediction engine</Label>
-            <Input id="engine" value="Baseline Risk Engine (deterministic)" readOnly className="mt-1.5" />
+            <Input
+              id="engine"
+              value="Baseline Risk Engine (deterministic)"
+              readOnly
+              className="mt-1.5"
+            />
             <p className="mt-1.5 text-xs text-muted-foreground">
-              A machine-learning model can replace this engine without changing the dashboards.
+              A transparent, rule-based scoring model. A trained ML model can replace this module
+              without modifying the dashboards.
             </p>
           </div>
         </div>
       </Panel>
 
+      {/* Risk thresholds */}
       <Panel
         title="Risk Thresholds"
-        description="Score boundaries used to convert a 0–100 risk score into a risk level."
+        description="Score boundaries that convert a 0–100 risk score into a risk level. Changes take effect immediately across all views."
         action={
           <Button
             size="sm"
@@ -126,7 +143,7 @@ function SettingsPage() {
             </div>
             {risk && selectedSprint && (
               <p className="mt-3 text-xs text-muted-foreground">
-                {selectedSprint.name} scores {risk.score}, which is currently labelled{" "}
+                {selectedSprint.name} scores {risk.score}, currently labelled{" "}
                 <strong className="text-foreground">{riskLevel(risk.score, thresholds)}</strong>.
               </p>
             )}
@@ -134,33 +151,34 @@ function SettingsPage() {
         </div>
       </Panel>
 
-      <Panel title="Notifications" description="Which changes raise a notification in the workspace.">
+      {/* Notification triggers */}
+      <Panel
+        title="Notification triggers"
+        description="Which risk signals raise a notification in the workspace. Preferences are stored in this browser session only."
+      >
         <div className="space-y-3">
-          {([
-            ["riskChange", "Risk level changes for the active sprint"],
-            ["scope", "Scope-change activity increases"],
-            ["blockers", "Issues become blocked"],
-            ["digest", "Daily sprint digest"],
-          ] as Array<[string, string]>).map(([key, label]) => (
-            <label key={key} className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-2.5 text-sm">
+          {(
+            [
+              ["riskChange", "Risk level changes for the active sprint"],
+              ["scope", "Scope-change activity increases"],
+              ["blockers", "Issues become blocked"],
+            ] as Array<[keyof typeof alerts, string]>
+          ).map(([key, label]) => (
+            <label
+              key={key}
+              className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-2.5 text-sm"
+            >
               {label}
               <Switch
-                checked={alerts[key as keyof typeof alerts]}
+                checked={alerts[key]}
                 onCheckedChange={(v) => {
-                  setAlerts({ ...alerts, [key]: v });
-                  toast.success(`${label} ${v ? "enabled" : "disabled"}.`);
+                  setAlerts((prev) => ({ ...prev, [key]: v }));
+                  toast.success(`"${label}" ${v ? "enabled" : "disabled"}.`);
                 }}
               />
             </label>
           ))}
         </div>
-      </Panel>
-
-      <Panel title="Appearance" description="SprintShield uses a single dark analytics theme.">
-        <label className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-2.5 text-sm">
-          Compact metric density
-          <Switch checked={density} onCheckedChange={setDensity} />
-        </label>
       </Panel>
     </AppShell>
   );

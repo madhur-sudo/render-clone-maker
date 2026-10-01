@@ -80,7 +80,7 @@ function Dashboard() {
       <PageHeader
         eyebrow={`${selectedProject?.name ?? "Project"} · ${selectedSprint.name}`}
         title="Sprint Overview"
-        subtitle="Monitor the health of your active sprint and identify early delivery risks."
+        subtitle="Early-warning risk analysis based on project metrics recorded up to the current sprint day."
         action={
           <div className="flex items-center gap-2">
             <StatusBadge status={selectedSprint.status} />
@@ -97,10 +97,11 @@ function Dashboard() {
       <section className="surface hero-glow relative overflow-hidden rounded-2xl p-5 sm:p-7">
         <div className="grid gap-7 lg:grid-cols-[auto_1fr] lg:items-center">
           <div className="flex justify-center">
-            <RiskGauge score={risk.score} level={risk.level} size={208} label="Delay probability" />
+            {/* Gauge shows the overall Baseline Risk Engine score (0–100) */}
+            <RiskGauge score={risk.score} level={risk.level} size={208} label="Risk score" />
           </div>
           <div className="min-w-0">
-            <div className="eyebrow">Current sprint risk</div>
+            <div className="eyebrow">Current sprint risk · Baseline Risk Engine</div>
             <div className="mt-2 flex flex-wrap items-baseline gap-3">
               <span className="font-display text-4xl font-semibold uppercase sm:text-5xl">
                 {risk.level}
@@ -112,7 +113,7 @@ function Dashboard() {
             </p>
             <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="Sprint day" value={`Day ${snap.day} / ${selectedSprint.lengthDays}`} />
-              <Stat label="Remaining" value={`${risk.daysRemaining} days`} />
+              <Stat label="Days remaining" value={`${risk.daysRemaining}`} />
               <Stat
                 label="Progress"
                 value={`${Math.round(risk.progressRatio * 100)}%`}
@@ -124,7 +125,7 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* KPI cards */}
+      {/* KPI cards — all derived from the same risk/snapshot object */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Sprint progress"
@@ -134,12 +135,12 @@ function Dashboard() {
           progress={risk.progressRatio * 100}
         />
         <MetricCard
-          label="Delay probability"
-          value={`${risk.delayProbability}%`}
-          sub={`${risk.level} risk`}
+          label="Risk score"
+          value={`${risk.score}%`}
+          sub={`${risk.level.charAt(0).toUpperCase() + risk.level.slice(1)} risk · Baseline Engine`}
           icon={Gauge}
           tone={risk.level}
-          progress={risk.delayProbability}
+          progress={risk.score}
         />
         <MetricCard label="Planned work" value={snap.plannedPoints} sub="Story points" icon={Target} />
         <MetricCard
@@ -179,31 +180,31 @@ function Dashboard() {
         />
       </section>
 
-      {/* Trend */}
+      {/* Risk trend */}
       <Panel
-        title="Risk Probability Over Sprint"
-        description="Recomputed for every day using only the metrics available up to that day. Click a point for its snapshot."
+        title="Risk Score Over Sprint"
+        description="Recomputed for every day using only the metrics available up to that day (no outcome leakage). Click a point to inspect its snapshot."
       >
         <RiskTrendChart data={series} thresholds={thresholds} onSelectDay={setSnapshotDay} />
       </Panel>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel
-          title="Why is this sprint at risk?"
-          description="Weighted contribution of each metric group to the current score."
+          title="Contributing factors"
+          description="Weighted contribution of each metric group to the current risk score."
           className="lg:col-span-2"
         >
           <ContributingFactors factors={risk.factors} />
         </Panel>
 
-        <Panel title="Risk Explanation" description="Baseline Risk Engine">
+        <Panel title="Risk explanation" description="Baseline Risk Engine">
           <RiskExplanation risk={risk} />
         </Panel>
       </div>
 
       <Panel
         title="Recommended mitigation"
-        description={`${openMitigations.length} open action${openMitigations.length === 1 ? "" : "s"} derived from the detected factors.`}
+        description={`${openMitigations.length} open action${openMitigations.length === 1 ? "" : "s"} derived from the detected risk factors.`}
         action={
           <Button asChild size="sm" variant="secondary">
             <Link to="/mitigation">
@@ -214,7 +215,7 @@ function Dashboard() {
       >
         {mitigations.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No mitigation actions yet — no risk factor is above the action threshold.
+            No mitigation actions — no risk factor is above the action threshold.
           </p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">

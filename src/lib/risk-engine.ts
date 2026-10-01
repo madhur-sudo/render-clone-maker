@@ -107,7 +107,7 @@ export function computeRisk(
       value: progress,
       label:
         progress > 0.35
-          ? "Low progress relative to historical pace"
+          ? "Completion behind historical pace"
           : "Progress tracking close to plan",
       detail: `${Math.round(progressRatio * 100)}% complete on day ${sprintDay} of ${sprint.lengthDays} (expected ≈ ${Math.round(
         expectedProgressRatio * 100,
@@ -179,6 +179,8 @@ export function computeRisk(
   return {
     score,
     level,
+    // delayProbability is set equal to the risk score until proper probability
+    // calibration is implemented (e.g., Platt scaling on a trained classifier).
     delayProbability: score,
     factors,
     primarySignal,
