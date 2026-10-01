@@ -143,7 +143,7 @@ function Landing() {
               </div>
               <div className="mt-5 grid gap-6 lg:grid-cols-[auto_1fr] lg:items-center">
                 <div className="flex justify-center">
-                  <RiskGauge score={risk.score} level={risk.level} size={168} />
+                  <RiskGauge score={risk.score} level={risk.level} size={168} label="Risk score" />
                 </div>
                 <div className="min-w-0">
                   <RiskTrendChart data={series} thresholds={DEFAULT_THRESHOLDS} height={210} />

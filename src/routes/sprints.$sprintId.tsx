@@ -104,7 +104,7 @@ function SprintDetail() {
               {Math.round(risk.progressRatio * 100)}% progress
             </span>
             <span className="rounded-full border border-border bg-card px-3 py-1 text-xs tabular-nums">
-              {risk.delayProbability}% delay probability
+              {risk.score}% risk score
             </span>
           </div>
         }
