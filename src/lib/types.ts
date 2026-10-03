@@ -76,6 +76,11 @@ export interface RiskFactor {
 export interface RiskResult {
   score: number;
   level: RiskLevel;
+  /**
+   * Reserved for the ML stage. Until a trained classifier with probability calibration
+   * (e.g., Platt scaling) is available, this equals the risk score numerically
+   * but is NOT displayed as a percentage in the current UI.
+   */
   delayProbability: number;
   factors: RiskFactor[];
   primarySignal: string;

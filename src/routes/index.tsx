@@ -67,7 +67,7 @@ const FEATURES = [
 const PIPELINE = [
   { label: "Project Data", icon: Database, desc: "TAWOS Jira history" },
   { label: "Preprocessing", icon: Layers, desc: "Snapshot reconstruction" },
-  { label: "Feature Engineering", icon: GitCompare, desc: "7 metric groups" },
+  { label: "Feature Engineering", icon: GitCompare, desc: "8 metrics, 6 factor groups" },
   { label: "Mid-Sprint Snapshot", icon: ScanSearch, desc: "Temporal integrity" },
   { label: "Risk Prediction", icon: ShieldCheck, desc: "Baseline Engine" },
   { label: "Factor Analysis", icon: LineChart, desc: "Weighted contributions" },

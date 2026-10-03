@@ -179,8 +179,10 @@ export function computeRisk(
   return {
     score,
     level,
-    // delayProbability is set equal to the risk score until proper probability
-    // calibration is implemented (e.g., Platt scaling on a trained classifier).
+    // delayProbability is a reserved field for the ML stage.
+    // It equals the risk score numerically until a trained classifier with
+    // proper probability calibration (Platt scaling) is implemented.
+    // It is NOT displayed as a percentage in the current UI.
     delayProbability: score,
     factors,
     primarySignal,

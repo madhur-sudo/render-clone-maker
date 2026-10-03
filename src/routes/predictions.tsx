@@ -26,7 +26,7 @@ export const Route = createFileRoute("/predictions")({
       {
         name: "description",
         content:
-          "Pick a project, sprint and snapshot day to compute delay risk from only the metrics available at that point in the sprint.",
+          "Pick a project, sprint and snapshot day to assess risk using only metrics available at that point in the sprint.",
       },
       { property: "og:title", content: "Early Sprint Risk Prediction — SprintShield" },
       {
@@ -189,9 +189,9 @@ function PredictionsPage() {
                 <dl className="w-full space-y-1.5 text-sm">
                   <Row label="Risk score" value={`${risk.score} / 100`} />
                   <Row
-                    label="Delay probability"
-                    value={`${risk.delayProbability}%`}
-                    note="Equals risk score — calibration pending"
+                    label="Risk level"
+                    value={risk.level.charAt(0).toUpperCase() + risk.level.slice(1)}
+                    note={`Threshold: ≥ ${risk.level === "low" ? "0" : risk.level === "medium" ? "40" : risk.level === "high" ? "60" : "80"}`}
                   />
                   <Row label="Snapshot" value={`Day ${activeDay} of ${sprint.lengthDays}`} />
                   <Row label="Days remaining" value={`${risk.daysRemaining}`} />

@@ -36,7 +36,7 @@ export const Route = createFileRoute("/dashboard")({
       {
         name: "description",
         content:
-          "Monitor the health of your active sprint, see the current delay probability and understand which metrics drive the risk.",
+          "Monitor your active sprint, see the current risk score and understand which metrics are driving the most risk.",
       },
       { property: "og:title", content: "Sprint Overview — SprintShield" },
       {

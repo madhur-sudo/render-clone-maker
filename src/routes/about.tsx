@@ -48,7 +48,7 @@ const PIPELINE = [
   { label: "Dataset identified (TAWOS — 36 projects, 4,594 sprints)", done: true },
   { label: "Preprocessing design (temporal snapshot reconstruction)", done: true },
   { label: "Temporal filtering design (no outcome leakage)", done: true },
-  { label: "Feature engineering design (7 metric groups)", done: true },
+  { label: "Feature engineering design (8 raw metrics → 6 risk factor groups)", done: true },
   { label: "Baseline Risk Engine implemented (deterministic, transparent)", done: true },
   { label: "Decision-support dashboard built", done: true },
   { label: "Mitigation action framework implemented", done: true },
@@ -194,7 +194,7 @@ function AboutPage() {
           </ol>
         </Panel>
 
-        <Panel title="Engineered features">
+        <Panel title="Engineered metrics (raw inputs)">
           <ul className="space-y-2 text-sm text-muted-foreground">
             {FEATURES.map((f) => (
               <li key={f} className="flex items-start gap-2">
@@ -203,6 +203,11 @@ function AboutPage() {
               </li>
             ))}
           </ul>
+          <div className="mt-4 rounded-lg border border-border bg-background/40 px-3 py-2.5 text-xs text-muted-foreground">
+            <strong className="text-foreground">Risk factor groups (6):</strong>{" "}
+            Progress · Scope Churn · Blocked Work · Workload · Velocity Strain · Process Instability.
+            Each group aggregates one or more raw metrics and is scored 0–1 before weighting.
+          </div>
         </Panel>
 
         <Panel title="Research gap">
@@ -276,9 +281,11 @@ function AboutPage() {
             phase.
           </li>
           <li>
-            <strong className="text-foreground">Delay probability = risk score.</strong> Until
-            proper probability calibration (e.g., Platt scaling) is applied to a trained classifier,
-            the delay probability is set equal to the risk score as a placeholder.
+            <strong className="text-foreground">No calibrated delay probability.</strong>{" "}
+            The current Baseline Risk Engine outputs a 0–100 risk score and a risk level (Low /
+            Medium / High / Critical). It does not output a calibrated probability of delay.
+            Probability calibration (e.g., Platt scaling) requires a trained classifier and is
+            reserved for the ML stage.
           </li>
         </ul>
       </Panel>
