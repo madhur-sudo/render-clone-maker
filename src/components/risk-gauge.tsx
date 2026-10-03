@@ -72,13 +72,13 @@ export function RiskGauge({
       <div
         className="absolute inset-0 flex flex-col items-center justify-center"
         role="img"
-        aria-label={`${label}: ${Math.round(animated)}%`}
+        aria-label={`${label}: ${Math.round(animated)} out of 100`}
       >
         <span
           className={cn("font-display font-semibold tabular-nums")}
           style={{ fontSize: size * 0.26, color }}
         >
-          {Math.round(animated)}%
+          {Math.round(animated)}/100
         </span>
         <span className="mt-1 max-w-[70%] text-center text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           {label}

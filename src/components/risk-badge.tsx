@@ -25,7 +25,7 @@ export function RiskBadge({
     >
       <span className="size-1.5 rounded-full bg-current" />
       {RISK_LEVEL_LABEL[level]}
-      {score !== undefined && <span className="tabular-nums opacity-80">{score}%</span>}
+      {score !== undefined && <span className="tabular-nums opacity-80">{score}/100</span>}
     </span>
   );
 }
