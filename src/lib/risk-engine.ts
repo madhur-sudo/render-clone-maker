@@ -299,10 +299,14 @@ export function riskSeries(sprint: Sprint, thresholds: RiskThresholds) {
         score: r.score,
         level: r.level,
         progress: Math.round(r.progressRatio * 100),
+        /** Expected progress at this day (0-100) for the "expected" reference line. */
+        expectedProgress: Math.round(r.expectedProgressRatio * 100),
         scopeChanges: s.issuesAdded + s.issuesRemoved + s.storyPointChanges,
         blocked: s.blockedIssues,
         completedPoints: s.completedPoints,
         plannedPoints: s.plannedPoints,
+        /** Top signal at this snapshot for timeline annotation. */
+        primarySignal: r.primarySignal,
       };
     });
 }

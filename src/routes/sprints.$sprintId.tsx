@@ -2,11 +2,13 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import {
   AlertOctagon,
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   CircleDot,
   Shuffle,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -59,10 +61,10 @@ const CHART_AXIS = { fill: "var(--color-muted-foreground)", fontSize: 11 };
 
 function SprintDetail() {
   const { sprintId } = useParams({ from: "/sprints/$sprintId" });
-  const { sprints, riskFor, thresholds, mitigationsFor, setMitigationStatus } = useStore();
-  const [snapshotDay, setSnapshotDay] = useState<number | null>(null);
+  const { sprints, riskFor, thresholds, mitigationsFor, setMitigationStatus, snapshotDay, activeSnapshotDay, setSnapshotDay } = useStore();
 
   const sprint = sprints.find((s) => s.id === sprintId);
+  const effectiveDay = sprint ? Math.min(activeSnapshotDay, sprint.currentDay) : 1;
 
   const series = useMemo(() => (sprint ? riskSeries(sprint, thresholds) : []), [sprint, thresholds]);
 
@@ -81,7 +83,7 @@ function SprintDetail() {
     );
   }
 
-  const risk = riskFor(sprint);
+  const risk = riskFor(sprint, effectiveDay);
   const snap = risk.snapshot;
   const actions = mitigationsFor(sprint);
 
@@ -101,11 +103,28 @@ function SprintDetail() {
             <StatusBadge status={sprint.status} />
             <RiskBadge level={risk.level} score={risk.score} size="md" />
             <span className="rounded-full border border-border bg-card px-3 py-1 text-xs tabular-nums">
-              {Math.round(risk.progressRatio * 100)}% progress
+              Day {effectiveDay} / {sprint.lengthDays}
             </span>
-            <span className="rounded-full border border-border bg-card px-3 py-1 text-xs tabular-nums">
-              {risk.score}% risk score
-            </span>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-7"
+              disabled={effectiveDay <= 1}
+              onClick={() => setSnapshotDay(effectiveDay - 1)}
+              aria-label="Previous day"
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-7"
+              disabled={effectiveDay >= sprint.currentDay}
+              onClick={() => setSnapshotDay(effectiveDay + 1)}
+              aria-label="Next day"
+            >
+              <ChevronRight className="size-4" />
+            </Button>
           </div>
         }
       />
@@ -136,12 +155,13 @@ function SprintDetail() {
                 </p>
               </div>
             </Panel>
-            <Panel title="Risk trend" className="lg:col-span-2">
+            <Panel title="Risk trend" description="Click a day to navigate the snapshot.">
               <RiskTrendChart
                 data={series}
                 thresholds={thresholds}
                 height={240}
-                onSelectDay={setSnapshotDay}
+                selectedDay={effectiveDay}
+                onSelectDay={(d) => setSnapshotDay(d)}
               />
             </Panel>
           </div>
@@ -295,9 +315,9 @@ function SprintDetail() {
 
       <SnapshotModal
         sprint={sprint}
-        day={snapshotDay}
-        open={snapshotDay !== null}
-        onOpenChange={(open) => !open && setSnapshotDay(null)}
+        day={effectiveDay}
+        open={false}
+        onOpenChange={() => {}}
       />
     </AppShell>
   );

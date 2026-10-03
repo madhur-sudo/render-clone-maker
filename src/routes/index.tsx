@@ -4,6 +4,7 @@ import {
   Bolt,
   Database,
   GitCompare,
+  Info,
   Layers,
   LineChart,
   Radar,
@@ -64,13 +65,21 @@ const FEATURES = [
 ];
 
 const PIPELINE = [
-  { label: "Project Data", icon: Database },
-  { label: "Preprocessing", icon: Layers },
-  { label: "Feature Engineering", icon: GitCompare },
-  { label: "Mid-Sprint Snapshot", icon: ScanSearch },
-  { label: "Risk Prediction", icon: ShieldCheck },
-  { label: "Factor Analysis", icon: LineChart },
-  { label: "Mitigation Guidance", icon: Bolt },
+  { label: "Project Data", icon: Database, desc: "TAWOS Jira history" },
+  { label: "Preprocessing", icon: Layers, desc: "Snapshot reconstruction" },
+  { label: "Feature Engineering", icon: GitCompare, desc: "7 metric groups" },
+  { label: "Mid-Sprint Snapshot", icon: ScanSearch, desc: "Temporal integrity" },
+  { label: "Risk Prediction", icon: ShieldCheck, desc: "Baseline Engine" },
+  { label: "Factor Analysis", icon: LineChart, desc: "Weighted contributions" },
+  { label: "Mitigation Guidance", icon: Bolt, desc: "Actionable decisions" },
+];
+
+/** Observe → Predict → Explain → Act */
+const WORKFLOW = [
+  { step: "Observe", desc: "Select a sprint and snapshot day" },
+  { step: "Predict", desc: "Engine scores risk from metrics" },
+  { step: "Explain", desc: "See which factors drive the score" },
+  { step: "Act", desc: "Start a mitigation action" },
 ];
 
 function Landing() {
@@ -105,7 +114,7 @@ function Landing() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* ── Hero ────────────────────────────────────────────────────── */}
       <section className="hero-glow relative overflow-hidden">
         <div className="grid-lines absolute inset-0 opacity-60" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
@@ -113,49 +122,95 @@ function Landing() {
             <Sparkles className="size-3.5" /> Baseline Risk Engine · Demo workspace ready
           </span>
           <h1 className="mt-6 max-w-3xl font-display text-4xl font-semibold leading-[1.08] sm:text-5xl lg:text-6xl">
-            Predict sprint risk before it becomes a delivery problem.
+            See sprint risk before the sprint slips.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             SprintShield analyzes Agile project metrics during an active sprint to identify early warning
             signals, explain contributing factors, and support corrective action.
           </p>
+
+          {/* ── Observe → Predict → Explain → Act ─────────────────── */}
+          <div className="mt-8 flex flex-wrap items-center gap-2 text-sm">
+            {WORKFLOW.map((w, i) => (
+              <div key={w.step} className="flex items-center gap-2">
+                {i > 0 && <ArrowRight className="size-4 text-muted-foreground/50 shrink-0" />}
+                <div className="rounded-lg border border-border bg-card px-3 py-2">
+                  <div className="font-display font-semibold text-primary">{w.step}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{w.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button size="lg" onClick={openDemo}>
-              Open Dashboard <ArrowRight className="size-4" />
+              Explore Demo <ArrowRight className="size-4" />
             </Button>
-            <Button size="lg" variant="secondary" onClick={openDemo}>
-              Explore Demo
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/about">Read the research</Link>
             </Button>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Launch Demo Workspace — 3 projects, 24 sprints and daily sprint snapshots, no setup required.
+            Demo Workspace — 3 projects, 24 sprints and daily sprint snapshots. No setup required.
           </p>
 
-          {/* Animated dashboard preview */}
+          {/* ── Live Sprint 42 preview ───────────────────────────── */}
           {hero && risk && (
             <div className="surface mt-14 rounded-2xl p-4 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="eyebrow">Project Atlas · {hero.name}</div>
+                  <div className="eyebrow">Project Atlas · {hero.name} · Day {hero.currentDay} / {hero.lengthDays}</div>
                   <div className="mt-1 font-display text-lg font-semibold">Current sprint risk</div>
                 </div>
-                <RiskBadge level={risk.level} score={risk.score} size="md" />
+                <div className="flex items-center gap-3">
+                  <RiskBadge level={risk.level} score={risk.score} size="md" />
+                  <div className="text-xs text-muted-foreground">
+                    Baseline Risk Engine<br />
+                    <span className="text-[10px] text-analytic">Illustrative demo</span>
+                  </div>
+                </div>
               </div>
               <div className="mt-5 grid gap-6 lg:grid-cols-[auto_1fr] lg:items-center">
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-3">
                   <RiskGauge score={risk.score} level={risk.level} size={168} label="Risk score" />
+                  <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-center">
+                    <div>
+                      <dt className="text-muted-foreground">Progress</dt>
+                      <dd className="font-semibold tabular-nums">{Math.round(risk.progressRatio * 100)}%</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Expected</dt>
+                      <dd className="font-semibold tabular-nums">{Math.round(risk.expectedProgressRatio * 100)}%</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Blockers</dt>
+                      <dd className="font-semibold tabular-nums">{risk.snapshot.blockedIssues}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Scope Δ</dt>
+                      <dd className="font-semibold tabular-nums">
+                        {risk.snapshot.issuesAdded + risk.snapshot.issuesRemoved + risk.snapshot.storyPointChanges}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
                 <div className="min-w-0">
                   <RiskTrendChart data={series} thresholds={DEFAULT_THRESHOLDS} height={210} />
                 </div>
               </div>
+              <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Info className="size-3.5 shrink-0" />
+                All numbers shown are from the demo workspace and driven by the same Baseline Risk Engine
+                used throughout the application. Not from real project data.
+              </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Features */}
+      {/* ── Features ────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className="eyebrow mb-3">What SprintShield does</div>
         <div className="grid gap-4 sm:grid-cols-2">
           {FEATURES.map((f) => (
             <article key={f.title} className="surface rounded-xl p-6 transition-colors hover:border-primary/30">
@@ -167,7 +222,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* ── Pipeline ─────────────────────────────────────────────────── */}
       <section className="border-y border-border bg-card/40">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
           <div className="eyebrow">How it works</div>
@@ -187,20 +242,26 @@ function Landing() {
                   <step.icon className="size-4 text-muted-foreground" />
                 </div>
                 <div className="mt-3 font-display text-sm font-medium">{step.label}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{step.desc}</div>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      {/* CTA */}
+      {/* ── CTA ─────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
         <h2 className="font-display text-2xl font-semibold sm:text-3xl">
           See sprint risk before the sprint slips.
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-          Sprint 42 in the demo workspace is currently high risk — open the dashboard to see why and what to
-          do about it.
+          Sprint 42 in the demo workspace is currently{" "}
+          {risk ? (
+            <span className="font-semibold text-risk-high">{risk.level} risk ({risk.score} / 100)</span>
+          ) : (
+            "high risk"
+          )}{" "}
+          — open the dashboard to see why and what to do about it.
         </p>
         <div className="mt-7 flex justify-center">
           <Button size="lg" onClick={openDemo}>

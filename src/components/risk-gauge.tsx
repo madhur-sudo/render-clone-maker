@@ -13,7 +13,7 @@ export function RiskGauge({
   score,
   level,
   size = 200,
-  label = "Delay probability",
+  label = "Risk score",
 }: {
   score: number;
   level: RiskLevel;

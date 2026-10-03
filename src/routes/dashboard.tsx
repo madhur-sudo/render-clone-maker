@@ -4,6 +4,8 @@ import {
   Bolt,
   CalendarClock,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Gauge,
   History,
   Shuffle,
@@ -22,6 +24,7 @@ import { RiskExplanation } from "@/components/risk-explanation";
 import { RiskGauge } from "@/components/risk-gauge";
 import { RiskTrendChart } from "@/components/risk-trend-chart";
 import { SnapshotModal } from "@/components/snapshot-modal";
+import { WhatChangedPanel } from "@/components/what-changed-panel";
 import { Button } from "@/components/ui/button";
 import { riskSeries } from "@/lib/risk-engine";
 import { useStore } from "@/lib/store";
@@ -46,14 +49,35 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
-  const { selectedProject, selectedSprint, risk, thresholds, mitigations, setMitigationStatus } =
-    useStore();
-  const [snapshotDay, setSnapshotDay] = useState<number | null>(null);
+  const {
+    selectedProject,
+    selectedSprint,
+    risk,
+    thresholds,
+    mitigations,
+    setMitigationStatus,
+    snapshotDay,
+    activeSnapshotDay,
+    setSnapshotDay,
+    snapshotDelta,
+  } = useStore();
+
+  const [
+    modalDay,
+    setModalDay,
+  ] = useState<number | null>(null);
 
   const series = useMemo(
     () => (selectedSprint ? riskSeries(selectedSprint, thresholds) : []),
     [selectedSprint, thresholds],
   );
+
+  // Find the day that precedes the active snapshot for the delta label.
+  const prevDay = useMemo(() => {
+    if (!selectedSprint) return undefined;
+    const snaps = selectedSprint.snapshots.filter((s) => s.day < activeSnapshotDay);
+    return snaps.length > 0 ? snaps[snaps.length - 1].day : undefined;
+  }, [selectedSprint, activeSnapshotDay]);
 
   if (!selectedSprint || !risk) {
     return (
@@ -75,12 +99,16 @@ function Dashboard() {
     (m) => m.status === "not_started" || m.status === "in_progress",
   );
 
+  const maxDay = selectedSprint.currentDay;
+  const canGoBack = activeSnapshotDay > 1;
+  const canGoForward = activeSnapshotDay < maxDay;
+
   return (
     <AppShell>
       <PageHeader
         eyebrow={`${selectedProject?.name ?? "Project"} · ${selectedSprint.name}`}
         title="Sprint Overview"
-        subtitle="Early-warning risk analysis based on project metrics recorded up to the current sprint day."
+        subtitle="Early-warning risk analysis based on project metrics recorded up to the selected snapshot day."
         action={
           <div className="flex items-center gap-2">
             <StatusBadge status={selectedSprint.status} />
@@ -93,7 +121,73 @@ function Dashboard() {
         }
       />
 
-      {/* Hero risk card */}
+      {/* ── Snapshot Day Selector ─────────────────────────────────── */}
+      <section className="surface rounded-xl p-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div>
+            <div className="eyebrow mb-1">Snapshot Day</div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                disabled={!canGoBack}
+                onClick={() => setSnapshotDay(activeSnapshotDay - 1)}
+                aria-label="Previous day"
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <span className="font-display text-xl font-semibold tabular-nums w-28 text-center">
+                Day {activeSnapshotDay} / {selectedSprint.lengthDays}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                disabled={!canGoForward}
+                onClick={() => setSnapshotDay(activeSnapshotDay + 1)}
+                aria-label="Next day"
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="h-10 w-px bg-border hidden sm:block" />
+          <div>
+            <div className="eyebrow mb-1">Data window</div>
+            <p className="text-sm text-muted-foreground">
+              Prediction uses information available up to{" "}
+              <strong className="text-foreground">Day {activeSnapshotDay}</strong>.
+              {activeSnapshotDay < selectedSprint.lengthDays && (
+                <span className="ml-1 text-analytic">
+                  Days {activeSnapshotDay + 1}–{selectedSprint.lengthDays} withheld.
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="ml-auto flex gap-2">
+            {/* Day quick-jump buttons */}
+            {[1, Math.round(maxDay / 2), maxDay].filter((d, i, arr) => arr.indexOf(d) === i && d >= 1 && d <= maxDay).map((d) => (
+              <Button
+                key={d}
+                size="sm"
+                variant={activeSnapshotDay === d ? "default" : "secondary"}
+                onClick={() => setSnapshotDay(d)}
+                aria-label={`Jump to day ${d}`}
+              >
+                D{d}
+              </Button>
+            ))}
+            {snapshotDay !== null && (
+              <Button size="sm" variant="ghost" onClick={() => setSnapshotDay(null)}>
+                Reset
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Hero risk card ─────────────────────────────────────────── */}
       <section className="surface hero-glow relative overflow-hidden rounded-2xl p-5 sm:p-7">
         <div className="grid gap-7 lg:grid-cols-[auto_1fr] lg:items-center">
           <div className="flex justify-center">
@@ -101,7 +195,9 @@ function Dashboard() {
             <RiskGauge score={risk.score} level={risk.level} size={208} label="Risk score" />
           </div>
           <div className="min-w-0">
-            <div className="eyebrow">Current sprint risk · Baseline Risk Engine</div>
+            <div className="eyebrow">
+              Baseline Risk Engine · Day {activeSnapshotDay} snapshot
+            </div>
             <div className="mt-2 flex flex-wrap items-baseline gap-3">
               <span className="font-display text-4xl font-semibold uppercase sm:text-5xl">
                 {risk.level}
@@ -112,7 +208,7 @@ function Dashboard() {
               {risk.explanation}
             </p>
             <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="Sprint day" value={`Day ${snap.day} / ${selectedSprint.lengthDays}`} />
+              <Stat label="Snapshot day" value={`Day ${snap.day} / ${selectedSprint.lengthDays}`} />
               <Stat label="Days remaining" value={`${risk.daysRemaining}`} />
               <Stat
                 label="Progress"
@@ -125,7 +221,7 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* KPI cards — all derived from the same risk/snapshot object */}
+      {/* ── KPI cards ─────────────────────────────────────────────── */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Sprint progress"
@@ -136,7 +232,7 @@ function Dashboard() {
         />
         <MetricCard
           label="Risk score"
-          value={`${risk.score}%`}
+          value={`${risk.score} / 100`}
           sub={`${risk.level.charAt(0).toUpperCase() + risk.level.slice(1)} risk · Baseline Engine`}
           icon={Gauge}
           tone={risk.level}
@@ -180,14 +276,23 @@ function Dashboard() {
         />
       </section>
 
-      {/* Risk trend */}
+      {/* ── Risk timeline ─────────────────────────────────────────── */}
       <Panel
-        title="Risk Score Over Sprint"
-        description="Recomputed for every day using only the metrics available up to that day (no outcome leakage). Click a point to inspect its snapshot."
+        title="Risk Score Timeline"
+        description="Recomputed for every day using only metrics available up to that day (no outcome leakage). Click a day to inspect its snapshot. Dashed line = expected progress."
       >
-        <RiskTrendChart data={series} thresholds={thresholds} onSelectDay={setSnapshotDay} />
+        <RiskTrendChart
+          data={series}
+          thresholds={thresholds}
+          selectedDay={activeSnapshotDay}
+          onSelectDay={(day) => {
+            setSnapshotDay(day);
+            setModalDay(day);
+          }}
+        />
       </Panel>
 
+      {/* ── Analysis panels ───────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel
           title="Contributing factors"
@@ -202,6 +307,17 @@ function Dashboard() {
         </Panel>
       </div>
 
+      {/* ── What Changed? ─────────────────────────────────────────── */}
+      {snapshotDelta && (
+        <Panel
+          title={`What changed since Day ${prevDay ?? "—"}?`}
+          description="Metric deltas between adjacent snapshots. Red = worsened, green = improved."
+        >
+          <WhatChangedPanel delta={snapshotDelta} prevDay={prevDay ?? 0} />
+        </Panel>
+      )}
+
+      {/* ── Recommended mitigation ────────────────────────────────── */}
       <Panel
         title="Recommended mitigation"
         description={`${openMitigations.length} open action${openMitigations.length === 1 ? "" : "s"} derived from the detected risk factors.`}
@@ -233,9 +349,9 @@ function Dashboard() {
 
       <SnapshotModal
         sprint={selectedSprint}
-        day={snapshotDay}
-        open={snapshotDay !== null}
-        onOpenChange={(open) => !open && setSnapshotDay(null)}
+        day={modalDay}
+        open={modalDay !== null}
+        onOpenChange={(open) => !open && setModalDay(null)}
       />
     </AppShell>
   );

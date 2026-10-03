@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Lock } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  Lock,
+  TrendingUp,
+} from "lucide-react";
 import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
@@ -8,9 +13,10 @@ import { PageHeader, Panel } from "@/components/panel";
 import { RiskBadge } from "@/components/risk-badge";
 import { RiskExplanation } from "@/components/risk-explanation";
 import { RiskGauge } from "@/components/risk-gauge";
+import { RiskTrendChart } from "@/components/risk-trend-chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { computeRisk } from "@/lib/risk-engine";
+import { computeRisk, riskSeries } from "@/lib/risk-engine";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/predictions")({
@@ -32,6 +38,19 @@ export const Route = createFileRoute("/predictions")({
   component: PredictionsPage,
 });
 
+/** Model pipeline stages — truthful, no fabricated accuracy. */
+const PIPELINE_STAGES = [
+  { label: "Dataset identified (TAWOS)", done: true },
+  { label: "Preprocessing design", done: true },
+  { label: "Temporal filtering design", done: true },
+  { label: "Feature engineering design", done: true },
+  { label: "Baseline Risk Engine implemented", done: true },
+  { label: "Model training", done: false },
+  { label: "Cross-validation", done: false },
+  { label: "Evaluation on TAWOS", done: false },
+  { label: "Probability calibration", done: false },
+];
+
 function PredictionsPage() {
   const { projects, sprints, selectedProject, selectedSprint, selectProject, selectSprint, thresholds } =
     useStore();
@@ -42,6 +61,7 @@ function PredictionsPage() {
   const maxDay = sprint?.currentDay ?? 1;
   const activeDay = Math.min(day ?? maxDay, maxDay);
   const risk = sprint ? computeRisk(sprint, thresholds, activeDay) : undefined;
+  const series = sprint ? riskSeries(sprint, thresholds) : [];
 
   // Days NOT yet available — post-snapshot window
   const daysReserved = sprint ? sprint.lengthDays - activeDay : 0;
@@ -54,7 +74,14 @@ function PredictionsPage() {
         subtitle="Risk is computed using only information recorded up to the selected snapshot day. The final sprint outcome is never used as a prediction input."
       />
 
-      {/* Prediction inputs */}
+      {/* ── Academic status banner ─────────────────────────────────── */}
+      <div className="rounded-xl border border-analytic/30 bg-analytic/5 px-4 py-3 text-xs text-analytic">
+        <strong className="font-semibold">Research status:</strong>{" "}
+        Illustrative baseline — model training and evaluation on the TAWOS dataset are pending. No accuracy,
+        F1 or AUC figures are claimed.
+      </div>
+
+      {/* ── Prediction inputs ─────────────────────────────────────── */}
       <Panel title="Prediction inputs">
         <div className="grid gap-4 md:grid-cols-3">
           <div>
@@ -94,6 +121,7 @@ function PredictionsPage() {
                 {projectSprints.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
+                    {s.status === "active" ? " · active" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -111,11 +139,14 @@ function PredictionsPage() {
               onValueChange={([v]) => setDay(v)}
               className="mt-3"
             />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Prediction uses information available up to Day {activeDay}.
+            </p>
           </div>
         </div>
       </Panel>
 
-      {/* Snapshot window — temporal integrity panel */}
+      {/* ── Temporal integrity panel ──────────────────────────────── */}
       {sprint && (
         <div className="grid gap-3 sm:grid-cols-3">
           <InfoBox label="Prediction snapshot" value={`Day ${activeDay} of ${sprint.lengthDays}`} />
@@ -149,6 +180,7 @@ function PredictionsPage() {
         </Panel>
       ) : (
         <>
+          {/* ── Prediction output ─────────────────────────────────── */}
           <div className="grid gap-4 lg:grid-cols-3">
             <Panel title="Prediction">
               <div className="flex flex-col items-center gap-4">
@@ -163,7 +195,16 @@ function PredictionsPage() {
                   />
                   <Row label="Snapshot" value={`Day ${activeDay} of ${sprint.lengthDays}`} />
                   <Row label="Days remaining" value={`${risk.daysRemaining}`} />
+                  <Row
+                    label="Progress"
+                    value={`${Math.round(risk.progressRatio * 100)}%`}
+                    note={`expected ${Math.round(risk.expectedProgressRatio * 100)}%`}
+                  />
                 </dl>
+                <div className="w-full rounded-lg border border-border bg-background/40 px-3 py-2 text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">BASELINE ENGINE</span> · Not a trained
+                  ML model. Deterministic, transparent scoring.
+                </div>
               </div>
             </Panel>
             <Panel title="Contributing factors" className="lg:col-span-2">
@@ -171,6 +212,20 @@ function PredictionsPage() {
             </Panel>
           </div>
 
+          {/* ── Risk timeline ─────────────────────────────────────── */}
+          <Panel
+            title="Risk Score Timeline"
+            description={`Day-by-day risk for ${sprint.name}. The selected snapshot day is highlighted.`}
+          >
+            <RiskTrendChart
+              data={series}
+              thresholds={thresholds}
+              selectedDay={activeDay}
+              height={260}
+            />
+          </Panel>
+
+          {/* ── Metric summary + explanation ──────────────────────── */}
           <div className="grid gap-4 lg:grid-cols-2">
             <Panel
               title="Metric summary"
@@ -198,11 +253,41 @@ function PredictionsPage() {
                   </div>
                 ))}
               </dl>
+              <p className="mt-3 text-xs text-muted-foreground">
+                <strong className="text-foreground">Data provenance:</strong> Sprint snapshot (illustrative
+                demo workspace). No live Jira connection.
+              </p>
             </Panel>
-            <Panel title="Risk explanation">
-              <RiskExplanation risk={risk} />
-            </Panel>
+
+            <div className="space-y-4">
+              <Panel title="Risk explanation">
+                <RiskExplanation risk={risk} />
+              </Panel>
+
+              {/* ── Model pipeline status ───────────────────────── */}
+              <Panel title="Model pipeline status" description="What has been built vs what remains for the ML stage.">
+                <ul className="space-y-2">
+                  {PIPELINE_STAGES.map((stage) => (
+                    <li key={stage.label} className="flex items-center gap-2.5 text-sm">
+                      {stage.done ? (
+                        <CheckCircle2 className="size-4 shrink-0 text-risk-low" />
+                      ) : (
+                        <Circle className="size-4 shrink-0 text-muted-foreground/40" />
+                      )}
+                      <span className={stage.done ? "text-foreground" : "text-muted-foreground"}>
+                        {stage.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Panel>
+            </div>
           </div>
+
+          {/* ── Sprint goal ───────────────────────────────────────── */}
+          <Panel title="Sprint goal">
+            <p className="text-sm text-muted-foreground italic">"{sprint.goal}"</p>
+          </Panel>
         </>
       )}
     </AppShell>

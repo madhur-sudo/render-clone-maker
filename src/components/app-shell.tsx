@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
   Bolt,
+  CalendarClock,
   GaugeCircle,
   Info,
   LayoutDashboard,
@@ -134,7 +135,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
-  const { projects, projectSprints, selectedProject, selectedSprint, selectProject, selectSprint } =
+  const { projects, projectSprints, selectedProject, selectedSprint, selectProject, selectSprint, activeSnapshotDay, snapshotDay } =
     useStore();
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -181,6 +182,21 @@ function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Snapshot day chip — shows which day is active globally */}
+        {selectedSprint && (
+          <div className="hidden h-9 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-xs sm:flex">
+            <CalendarClock className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">D</span>
+            <span className="font-semibold tabular-nums">{activeSnapshotDay}</span>
+            <span className="text-muted-foreground">/{selectedSprint.lengthDays}</span>
+            {snapshotDay !== null && (
+              <span className="ml-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+                custom
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="ml-auto flex items-center gap-1">

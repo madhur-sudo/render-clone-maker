@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ContributingFactors } from "@/components/contributing-factors";
 import { RiskBadge } from "@/components/risk-badge";
 import { computeRisk } from "@/lib/risk-engine";
 import { useStore } from "@/lib/store";
@@ -16,7 +17,7 @@ export function SnapshotModal({
   onOpenChange: (open: boolean) => void;
 }) {
   const { thresholds } = useStore();
-  if (day === null) return null;
+  if (day === null || !open) return null;
   const risk = computeRisk(sprint, thresholds, day);
   const s = risk.snapshot;
 
@@ -35,11 +36,12 @@ export function SnapshotModal({
     ["Assignee changes", String(s.assigneeChanges)],
     ["Sprint reassignments", String(s.reassignments)],
     ["Developers", String(s.devCount)],
+    ["Days remaining", String(risk.daysRemaining)],
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-3">
             {sprint.name} — Day {s.day} snapshot
@@ -61,25 +63,14 @@ export function SnapshotModal({
         </dl>
 
         <div>
-          <div className="eyebrow mb-2">Top contributing factors</div>
-          <ul className="space-y-2">
-            {risk.factors.slice(0, 3).map((f) => (
-              <li key={f.key} className="text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span>{f.label}</span>
-                  <span className="tabular-nums text-muted-foreground">+{f.contribution} pts</span>
-                </div>
-                {/* Bar width = normalised signal strength (0..1), not contribution/max which is misleading */}
-                <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${Math.round(f.value * 100)}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="eyebrow mb-3">Top contributing factors</div>
+          <ContributingFactors factors={risk.factors} showDetail={false} />
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          <strong className="text-foreground">Engine:</strong> Baseline Risk Engine (deterministic) ·{" "}
+          <strong className="text-foreground">Source:</strong> Demo workspace snapshot
+        </p>
       </DialogContent>
     </Dialog>
   );
